@@ -1,11 +1,26 @@
+import { useSelector } from "react-redux";
+import "bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Layout from "./layout";
+import Login from "./pages/auth/Login";
 import Dashboard from "./pages/Dashboard";
 
 function App() {
+  const user = useSelector((state) => state.user);
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/login" element={<Login />} />
+
+        <Route
+          path="/"
+          element={
+            <Layout user={user}>
+              <Dashboard />
+            </Layout>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
