@@ -1,14 +1,5 @@
 import { ShoppingCartOutlined } from "@ant-design/icons";
-import {
-  Button,
-  Card,
-  Col,
-  Input,
-  InputNumber,
-  Row,
-  Space,
-  Typography,
-} from "antd";
+import { Button, Col, InputNumber, Row, Typography } from "antd";
 import React, { useEffect, useState } from "react";
 
 const { Title } = Typography;

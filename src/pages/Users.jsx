@@ -68,12 +68,6 @@ export default function Users() {
         columns={columns}
         onChange={paginate}
         pagination={false}
-        // pagination={{
-        //   defaultCurrent: 1,
-        //   defaultPageSize: 10,
-        //   pageSizeOptions: [10, 15, 20],
-        //   total: data?.total,
-        // }}
       />
 
       <div className="centered-end">

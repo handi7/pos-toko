@@ -14,7 +14,6 @@ import {
 } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import Category from "../components/Category";
 import ProductCard from "../components/ProductCard";
 
@@ -50,7 +49,7 @@ const columns = [
 ];
 
 export default function Home() {
-  const user = useSelector((state) => state.user);
+  // const user = useSelector((state) => state.user);
 
   const [products, setProducts] = useState([]);
   const [selected, setSelected] = useState(null);

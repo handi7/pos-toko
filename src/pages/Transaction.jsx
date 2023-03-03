@@ -1,5 +1,5 @@
-import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Input, Space, Table, Typography } from "antd";
+import { LoadingOutlined } from "@ant-design/icons";
+import { Input, Space, Table, Typography } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 

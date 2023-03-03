@@ -1,6 +1,6 @@
 import { Card, Drawer, Layout, Spin } from "antd";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import { menuData } from "./menuData";
@@ -8,7 +8,7 @@ import MenuItems from "./MenuItems";
 import { useSelector } from "react-redux";
 import { LoadingOutlined } from "@ant-design/icons";
 
-export default function Layoutt({ children }) {
+export default function Layoutt() {
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
 
@@ -19,7 +19,7 @@ export default function Layoutt({ children }) {
 
   useEffect(() => {
     if (!user?.id) {
-      navigate("/login");
+      // navigate("/login");
     } else {
       setLogged(true);
     }
@@ -77,7 +77,10 @@ export default function Layoutt({ children }) {
         />
 
         <Layout.Content style={{ minHeight: "92vh" }} className="p-3">
-          <Card>{children}</Card>
+          <Card>
+            <Outlet />
+          </Card>
+          {/* <Card>{children}</Card> */}
         </Layout.Content>
       </Layout>
     </React.Fragment>

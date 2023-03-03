@@ -6,8 +6,9 @@ import {
 } from "@ant-design/icons";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Avatar, Badge, Button, Drawer, Dropdown, message, Space } from "antd";
+import { Avatar, Badge, Button, Drawer, Dropdown, Space } from "antd";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Cart from "../components/Cart";
 import Clock from "./Clock";
 
@@ -15,12 +16,12 @@ const items = [
   {
     label: "Profile",
     icon: <UserOutlined />,
-    key: "profile",
+    key: "/user",
   },
   {
     label: "Settings",
     icon: <SettingOutlined />,
-    key: "settings",
+    key: "/user/settings",
   },
   {
     type: "divider",
@@ -33,10 +34,15 @@ const items = [
 ];
 
 export default function Header({ mobile, setDrawer, setCollapsed }) {
+  const navigate = useNavigate();
+
   const [openCart, setCart] = useState(false);
 
   const onClick = ({ key }) => {
-    message.info(`Click on item ${key}`);
+    if (key === "logout") {
+    } else {
+      navigate(key);
+    }
   };
 
   return (

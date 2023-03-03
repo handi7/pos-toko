@@ -9,6 +9,10 @@ import Supplier from "./pages/Supplier";
 import Products from "./pages/Products";
 import Transaction from "./pages/Transaction";
 import Category from "./pages/Category";
+import Profile from "./pages/profile";
+import MainProfile from "./pages/profile/MainProfile";
+import Settings from "./pages/profile/Settings";
+import ErrorPage from "./pages/Error";
 
 function App() {
   const user = useSelector((state) => state.user);
@@ -17,60 +21,27 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="*" element={<ErrorPage />} />
 
-        <Route
-          path="/"
-          element={
-            <Layout user={user}>
-              <Home />
-            </Layout>
-          }
-        />
+        {/* PRIVATE ROUTES */}
+        <Route path="/" element={<Layout user={user} />}>
+          <Route path="" element={<Home />} />
 
-        <Route
-          path="/users"
-          element={
-            <Layout user={user}>
-              <Users />
-            </Layout>
-          }
-        />
+          <Route path="user" element={<Profile />}>
+            <Route path="" element={<MainProfile />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
 
-        <Route
-          path="/supplier"
-          element={
-            <Layout user={user}>
-              <Supplier />
-            </Layout>
-          }
-        />
+          <Route path="users" element={<Users />} />
 
-        <Route
-          path="/products"
-          element={
-            <Layout user={user}>
-              <Products />
-            </Layout>
-          }
-        />
+          <Route path="supplier" element={<Supplier />} />
 
-        <Route
-          path="/transaction"
-          element={
-            <Layout user={user}>
-              <Transaction />
-            </Layout>
-          }
-        />
+          <Route path="products" element={<Products />} />
 
-        <Route
-          path="/category"
-          element={
-            <Layout user={user}>
-              <Category />
-            </Layout>
-          }
-        />
+          <Route path="transaction" element={<Transaction />} />
+
+          <Route path="category" element={<Category />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

@@ -1,5 +1,4 @@
 import {
-  BarChartOutlined,
   InboxOutlined,
   OrderedListOutlined,
   ShopOutlined,
