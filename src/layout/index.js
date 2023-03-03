@@ -1,31 +1,27 @@
-import { Drawer, Layout } from "antd";
+import { Card, Drawer, Layout, Spin } from "antd";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import { menuData } from "./menuData";
 import MenuItems from "./MenuItems";
+import { useSelector } from "react-redux";
+import { LoadingOutlined } from "@ant-design/icons";
 
-export default function Layoutt({ user, children }) {
+export default function Layoutt({ children }) {
+  const user = useSelector((state) => state.user);
   const navigate = useNavigate();
-  const topics = ["First topic", "Second topic", "Third topic"];
 
   const [mobile, setMobile] = useState(true);
   const [drawer, setDrawer] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [contentIndex, setContentIndex] = useState(0);
-  const [selectedKey, setSelectedKey] = useState("/");
-
-  const changeSelectedKey = (event) => {
-    const key = event.key;
-    setSelectedKey(key);
-    setContentIndex(+key);
-    setDrawer(!drawer);
-  };
+  const [logged, setLogged] = useState(false);
 
   useEffect(() => {
     if (!user?.id) {
-      return navigate("/login");
+      navigate("/login");
+    } else {
+      setLogged(true);
     }
   }, [user]);
 
@@ -39,15 +35,21 @@ export default function Layoutt({ user, children }) {
   }, []);
 
   const Menu = (
-    <MenuItems
-      menus={menuData}
-      selectedKey={selectedKey}
-      changeSelectedKey={changeSelectedKey}
-    />
+    <MenuItems menus={menuData} closeDrawer={() => setDrawer(false)} />
   );
 
+  if (!logged)
+    return (
+      <div
+        style={{ height: "100vh" }}
+        className="d-flex justify-content-center align-items-center"
+      >
+        <Spin indicator={<LoadingOutlined spin />} />
+      </div>
+    );
+
   return (
-    <div>
+    <React.Fragment>
       {mobile && (
         <Drawer
           title="Topics"
@@ -74,11 +76,10 @@ export default function Layoutt({ user, children }) {
           setMobile={setMobile}
         />
 
-        <Layout.Content style={{ height: "92vh" }} className="p-5">
-          {/* {topics[contentIndex]} */}
-          {children}
+        <Layout.Content style={{ minHeight: "92vh" }} className="p-3">
+          <Card>{children}</Card>
         </Layout.Content>
       </Layout>
-    </div>
+    </React.Fragment>
   );
 }

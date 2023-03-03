@@ -1,19 +1,46 @@
 import {
-  faBars,
-  faClose,
-  faGear,
-  faRightFromBracket,
-  faUser,
-} from "@fortawesome/free-solid-svg-icons";
+  LogoutOutlined,
+  SettingOutlined,
+  ShoppingCartOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import { faBars } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Avatar, Card, Space } from "antd";
+import { Avatar, Badge, Button, Drawer, Dropdown, message, Space } from "antd";
 import React, { useState } from "react";
+import Cart from "../components/Cart";
+import Clock from "./Clock";
+
+const items = [
+  {
+    label: "Profile",
+    icon: <UserOutlined />,
+    key: "profile",
+  },
+  {
+    label: "Settings",
+    icon: <SettingOutlined />,
+    key: "settings",
+  },
+  {
+    type: "divider",
+  },
+  {
+    label: <span className="text-danger">Logout</span>,
+    icon: <LogoutOutlined className="text-danger" />,
+    key: "logout",
+  },
+];
 
 export default function Header({ mobile, setDrawer, setCollapsed }) {
-  const [show, setShow] = useState(false);
+  const [openCart, setCart] = useState(false);
+
+  const onClick = ({ key }) => {
+    message.info(`Click on item ${key}`);
+  };
 
   return (
-    <header className="d-flex justify-content-between align-items-center p-3 border">
+    <header className="between p-3 border">
       <Space size={10}>
         <span
           className="fs-4 p-2 pointer"
@@ -24,61 +51,40 @@ export default function Header({ mobile, setDrawer, setCollapsed }) {
         <span className="fw-bold fs-4">POS TOKO</span>
       </Space>
 
-      <Space size={5} className="pointer" onClick={() => setShow(!show)}>
-        <div className="d-flex flex-column text-end">
-          <span className="fw-bold text-primary">Handiani</span>
-          <small className="text-secondary">Super Admin</small>
-        </div>
+      {!mobile && <Clock />}
 
-        <Avatar
-          size="large"
-          style={{
-            backgroundColor: "#87d068",
-          }}
-          // icon={<UserOutlined />}
-        />
+      <Space size={15}>
+        <Badge count={5} offset={[-5, 5]}>
+          <Button
+            type="link"
+            size="large"
+            className="centered"
+            icon={<ShoppingCartOutlined style={{ fontSize: 20 }} />}
+            onClick={() => setCart(true)}
+          />
+        </Badge>
 
-        {show && (
-          <div className="position-absolute bg-white end-0 me-3 mt-4">
-            <Space
-              size={5}
-              className="d-flex border border-bottom-0 rounded-top py-2 px-3"
-            >
-              <Avatar
-                size="large"
-                style={{
-                  backgroundColor: "#87d068",
-                }}
-                // icon={<UserOutlined />}
-              />
-              <div className="d-flex flex-column">
-                <span className="fw-bold text-primary">Handiani</span>
-                <small className="text-secondary">handi@mail.com</small>
-              </div>
-            </Space>
-            <ul className="list-group">
-              <li className="list-group-item">
-                <Space size={10}>
-                  <FontAwesomeIcon icon={faUser} />
-                  <span>Profile</span>
-                </Space>
-              </li>
-              <li className="list-group-item">
-                <Space size={10}>
-                  <FontAwesomeIcon icon={faGear} />
-                  <span>Settings</span>
-                </Space>
-              </li>
-              <li className="list-group-item text-danger">
-                <Space size={10}>
-                  <FontAwesomeIcon icon={faRightFromBracket} />
-                  <span>Logout</span>
-                </Space>
-              </li>
-            </ul>
-          </div>
-        )}
+        <Dropdown menu={{ items, onClick }} trigger={["click"]}>
+          <Space size={5} className="pointer">
+            <div className="d-flex flex-column text-end">
+              <span className="fw-bold text-primary">Handiani</span>
+              <small className="text-secondary">Super Admin</small>
+            </div>
+
+            <Avatar size="large" icon={<UserOutlined />} />
+          </Space>
+        </Dropdown>
       </Space>
+
+      <Drawer
+        title="Cart"
+        placement="right"
+        width={mobile ? "90%" : 560}
+        open={openCart}
+        onClose={() => setCart(false)}
+      >
+        <Cart />
+      </Drawer>
     </header>
   );
 }

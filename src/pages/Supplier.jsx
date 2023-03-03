@@ -1,5 +1,5 @@
 import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Input, Pagination, Space, Table, Typography } from "antd";
+import { Button, Input, Space, Table, Typography } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 
@@ -22,7 +22,7 @@ const columns = [
   },
 ];
 
-export default function Users() {
+export default function Supplier() {
   const [data, setData] = useState({ data: [], total: 0 });
   const [loading, setLoading] = useState(false);
 
@@ -37,8 +37,9 @@ export default function Users() {
     }
   };
 
-  const paginate = (page, size) => {
-    getData(page, size);
+  const paginate = (pagination, filters, sorter) => {
+    const { current, pageSize } = pagination;
+    getData(current, pageSize);
   };
 
   useEffect(() => {
@@ -47,11 +48,11 @@ export default function Users() {
 
   return (
     <Space size={10} direction="vertical" className="w-100">
-      <Title level={3}>Data User</Title>
+      <Title level={3}>Supplier</Title>
       <div className="between">
         <Space size={10} className="d-flex align-items-center">
           <Button className="centered" shape="round" icon={<PlusOutlined />}>
-            Tambah user
+            Tambah Supplier
           </Button>
         </Space>
 
@@ -67,22 +68,13 @@ export default function Users() {
         dataSource={data?.data}
         columns={columns}
         onChange={paginate}
-        pagination={false}
-        // pagination={{
-        //   defaultCurrent: 1,
-        //   defaultPageSize: 10,
-        //   pageSizeOptions: [10, 15, 20],
-        //   total: data?.total,
-        // }}
+        pagination={{
+          defaultCurrent: 1,
+          defaultPageSize: 10,
+          pageSizeOptions: [10, 15, 20],
+          total: data?.total,
+        }}
       />
-
-      <div className="centered-end">
-        <Pagination
-          total={data?.total}
-          onChange={paginate}
-          pageSizeOptions={[10, 15, 20]}
-        />
-      </div>
     </Space>
   );
 }

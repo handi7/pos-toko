@@ -1,10 +1,7 @@
-import { faDashboard } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Layout, Space } from "antd";
+import { Layout } from "antd";
 import React from "react";
-import { Link } from "react-router-dom";
 
-export default function Sidebar({ menu, collapsed, mobile, setMobile }) {
+export default function Sidebar({ menu, collapsed, mobile }) {
   return (
     <Layout.Sider
       theme="light"
