@@ -1,28 +1,41 @@
 import { createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
 
 export const userSlice = createSlice({
   name: "user",
   initialState: {
-    id: 1,
+    data: null,
   },
   reducers: {
-    increment: (state) => {
-      // Redux Toolkit allows us to write "mutating" logic in reducers. It
-      // doesn't actually mutate the state because it uses the Immer library,
-      // which detects changes to a "draft state" and produces a brand new
-      // immutable state based off those changes
-      state.value += 1;
+    login: (state, action) => {
+      state.data = action.payload;
     },
-    decrement: (state) => {
-      state.value -= 1;
-    },
-    incrementByAmount: (state, action) => {
-      state.value += action.payload;
+    logout: (state) => {
+      localStorage.removeItem(process.env.REACT_APP_TOKEN);
+      state.data = null;
     },
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { increment, decrement, incrementByAmount } = userSlice.actions;
+export const { login, logout } = userSlice.actions;
+export const selectUser = (state) => state.user.data;
+
+export const keepLogin = (token) => async (dispatch) => {
+  try {
+    console.log(token);
+    const res = await axios.post(
+      `${process.env.REACT_APP_API_URL}/keep-login`,
+      {},
+      { headers: { Authorization: token } }
+    );
+
+    localStorage.setItem(process.env.REACT_APP_TOKEN, res.data.token);
+    dispatch(login(res.data.data));
+  } catch (error) {
+    localStorage.removeItem(process.env.REACT_APP_TOKEN);
+    console.log(error);
+  }
+};
 
 export default userSlice.reducer;

@@ -5,11 +5,13 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import { menuData } from "./menuData";
 import MenuItems from "./MenuItems";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { LoadingOutlined } from "@ant-design/icons";
+import { keepLogin, selectUser } from "../store/slices/userSlice";
 
 export default function Layoutt() {
-  const user = useSelector((state) => state.user);
+  const user = useSelector(selectUser);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [mobile, setMobile] = useState(true);
@@ -18,8 +20,13 @@ export default function Layoutt() {
   const [logged, setLogged] = useState(false);
 
   useEffect(() => {
-    if (!user?.id) {
-      // navigate("/login");
+    if (!user) {
+      const token = localStorage.getItem(process.env.REACT_APP_TOKEN);
+      if (token) {
+        dispatch(keepLogin(token));
+      } else {
+        navigate("/login");
+      }
     } else {
       setLogged(true);
     }

@@ -1,8 +1,28 @@
-import { Button, Card, Checkbox, Col, Form, Input, Row } from "antd";
+import { Button, Card, Checkbox, Col, Form, Input, message, Row } from "antd";
+import axios from "axios";
 import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Navigate } from "react-router-dom";
+import { login, selectUser } from "../../store/slices/userSlice";
 
 export default function Login() {
-  const onFinish = () => {};
+  const user = useSelector(selectUser);
+  const dispatch = useDispatch();
+
+  const onFinish = async (form) => {
+    try {
+      const res = await axios.post(
+        `${process.env.REACT_APP_API_URL}/login`,
+        form
+      );
+
+      localStorage.setItem(process.env.REACT_APP_TOKEN, res.data.token);
+      dispatch(login(res.data.data));
+    } catch ({ response }) {
+      message.error(response?.data?.error);
+    }
+  };
+
   return (
     <Row
       justify="center"
@@ -10,6 +30,7 @@ export default function Login() {
       className="bg-light"
       style={{ height: "100vh" }}
     >
+      {user && <Navigate to="/" replace={true} />}
       <Col
         xs={{ span: 18 }}
         md={{ span: 12 }}

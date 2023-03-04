@@ -8,8 +8,10 @@ import { faBars } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Avatar, Badge, Button, Drawer, Dropdown, Space } from "antd";
 import React, { useState } from "react";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Cart from "../components/Cart";
+import { logout } from "../store/slices/userSlice";
 import Clock from "./Clock";
 
 const items = [
@@ -34,12 +36,14 @@ const items = [
 ];
 
 export default function Header({ mobile, setDrawer, setCollapsed }) {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [openCart, setCart] = useState(false);
 
   const onClick = ({ key }) => {
     if (key === "logout") {
+      dispatch(logout());
     } else {
       navigate(key);
     }
