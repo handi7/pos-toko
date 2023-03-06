@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { LoadingOutlined } from "@ant-design/icons";
 import { keepLogin, selectUser } from "../store/slices/userSlice";
 
-export default function Layoutt() {
+export default function PrivateLayout() {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const navigate = useNavigate();

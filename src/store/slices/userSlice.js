@@ -23,7 +23,6 @@ export const selectUser = (state) => state.user.data;
 
 export const keepLogin = (token) => async (dispatch) => {
   try {
-    console.log(token);
     const res = await axios.post(
       `${process.env.REACT_APP_API_URL}/keep-login`,
       {},
