@@ -24,9 +24,9 @@ export const menuData = [
   },
   {
     id: 3,
-    label: "Produk",
+    label: "Product",
     icon: <ShoppingOutlined style={style} />,
-    key: "/products",
+    key: "/products/",
   },
   {
     id: 4,
@@ -36,13 +36,13 @@ export const menuData = [
   },
   {
     id: 5,
-    label: "Kategori",
+    label: "Category",
     icon: <OrderedListOutlined style={style} />,
     key: "/category",
   },
   {
     id: 6,
-    label: "Transaksi",
+    label: "Transaction",
     icon: <SwapOutlined style={style} />,
     key: "/transaction",
   },
