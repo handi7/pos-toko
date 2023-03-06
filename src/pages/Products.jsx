@@ -65,7 +65,7 @@ export default function Products() {
 
   const [data, setData] = useState({ data: [], total: 0 });
   const [categories, setCategories] = useState([]);
-  const [category, setCategory] = useState(null);
+  const [catId, setCat] = useState(null);
   const [searchText, setText] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -150,18 +150,11 @@ export default function Products() {
   };
 
   useEffect(() => {
+    getCategories();
     setText(key);
-    cat
-      ? categories.map((item) => {
-          item?.cat_id === +cat && setCategory(item.value);
-        })
-      : setCategory(null);
+    cat ? setCat(+cat) : setCat(null);
     getData(query);
   }, [query]);
-
-  useEffect(() => {
-    getCategories();
-  }, []);
 
   return (
     <Space size={10} direction="vertical" className="w-100">
@@ -175,8 +168,7 @@ export default function Products() {
 
         <Space size={10}>
           <Select
-            // defaultValue={category}
-            value={category}
+            value={catId ? categories.find((c) => c.cat_id === catId) : catId}
             style={{ width: 120 }}
             allowClear
             options={categories}
