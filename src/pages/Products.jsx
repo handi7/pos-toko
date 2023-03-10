@@ -12,6 +12,7 @@ import {
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AddProduct from "../components/AddProduct";
 import { idr, textCaps } from "../hooks/text";
 import { useQuery } from "../hooks/useQuery";
 
@@ -68,6 +69,8 @@ export default function Products() {
   const [category, setCategory] = useState(null);
   const [searchText, setText] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [drawer, setDrawer] = useState({ open: false, type: "" });
 
   const getData = async (query) => {
     try {
@@ -168,7 +171,12 @@ export default function Products() {
       <Title level={3}>Products</Title>
       <div className="between">
         <Space size={10} className="d-flex align-items-center">
-          <Button className="centered" shape="round" icon={<PlusOutlined />}>
+          <Button
+            className="centered"
+            shape="round"
+            icon={<PlusOutlined />}
+            onClick={() => setDrawer({ open: true, type: "add" })}
+          >
             Add Product
           </Button>
         </Space>
@@ -216,6 +224,14 @@ export default function Products() {
           />
         </div>
       ) : null}
+
+      <AddProduct
+        type={drawer?.type}
+        open={drawer?.open}
+        close={() => setDrawer({ open: false, type: "" })}
+        categories={categories}
+        getProducts={() => getData(query)}
+      />
     </Space>
   );
 }
