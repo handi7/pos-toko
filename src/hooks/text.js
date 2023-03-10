@@ -1,7 +1,7 @@
 export const textCaps = (text) => {
   const arr = text?.split(" ");
   let newText = "";
-  arr.forEach((item, idx) => {
+  arr?.forEach((item, idx) => {
     const caps = item[0].toUpperCase() + item.slice(1).toLowerCase();
     newText += idx === arr?.length - 1 ? caps : `${caps} `;
   });
