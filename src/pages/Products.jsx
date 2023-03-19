@@ -1,8 +1,17 @@
-import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  ExclamationCircleFilled,
+  LoadingOutlined,
+  MoreOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import {
   Button,
+  Dropdown,
   Image,
   Input,
+  Modal,
   Pagination,
   Select,
   Space,
@@ -13,45 +22,13 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AddProduct from "../components/AddProduct";
+import EditProduct from "../components/EditProduct";
 import { idr, textCaps } from "../hooks/text";
 import { useQuery } from "../hooks/useQuery";
 
 const { Title, Text } = Typography;
+const { confirm } = Modal;
 const api = process.env.REACT_APP_API_URL;
-
-const columns = [
-  {
-    title: "Product",
-    dataIndex: "name",
-    render: (name, rec) => {
-      return (
-        <div>
-          <Image src={rec?.img_url} width={50} />{" "}
-          <Text strong>{textCaps(name)}</Text>
-        </div>
-      );
-    },
-    sorter: true,
-  },
-  {
-    title: "Category",
-    dataIndex: "label",
-    render: (label) => textCaps(label),
-    sorter: true,
-  },
-  {
-    title: "Price",
-    dataIndex: "price",
-    render: (price) => idr(price),
-    sorter: true,
-  },
-  {
-    title: "Stock",
-    dataIndex: "stock",
-    render: (stock, rec) => <Text>{`${stock} ${rec?.unit}`}</Text>,
-    sorter: true,
-  },
-];
 
 export default function Products() {
   const query = window.location.search;
@@ -70,7 +47,9 @@ export default function Products() {
   const [searchText, setText] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [drawer, setDrawer] = useState({ open: false, type: "" });
+  const [drawer, setDrawer] = useState({ add: false, edit: false });
+  const [editData, setEditData] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
 
   const getData = async (query) => {
     try {
@@ -91,6 +70,13 @@ export default function Products() {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const onDelete = async (productId) => {
+    try {
+      await axios.delete(`${api}/product/${productId}`);
+      getData(query);
+    } catch (error) {}
   };
 
   const onSearch = (text) => {
@@ -159,6 +145,101 @@ export default function Products() {
     getData(query);
   }, [query]);
 
+  const showDeleteConfirm = (item) => {
+    confirm({
+      title: `Are you sure delete ${item?.name}?`,
+      icon: <ExclamationCircleFilled />,
+      // content: "Some descriptions",
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk() {
+        onDelete(item?.id);
+      },
+      onCancel() {},
+    });
+  };
+
+  const onClick = ({ key }, item) => {
+    switch (key) {
+      case "edit":
+        setEditData(item);
+        setDrawer({ ...drawer, edit: true });
+        break;
+
+      case "delete":
+        showDeleteConfirm(item);
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  const columns = [
+    {
+      title: "Product",
+      dataIndex: "name",
+      render: (name, rec) => {
+        return (
+          <div>
+            <Image src={rec?.img_url} width={50} />{" "}
+            <Text strong>{textCaps(name)}</Text>
+          </div>
+        );
+      },
+      sorter: true,
+    },
+    {
+      title: "Category",
+      dataIndex: "label",
+      render: (label) => textCaps(label),
+      sorter: true,
+    },
+    {
+      title: "Price",
+      dataIndex: "price",
+      render: (price) => idr(price),
+      sorter: true,
+    },
+    {
+      title: "Stock",
+      dataIndex: "stock",
+      render: (stock, rec) => <Text>{`${stock} ${rec?.unit}`}</Text>,
+      sorter: true,
+    },
+    {
+      width: 10,
+      render: (_, rec) => (
+        <div className="centered-end">
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  label: <span>Edit</span>,
+                  icon: <EditOutlined />,
+                  key: "edit",
+                },
+                {
+                  label: <span className="text-danger">Delete</span>,
+                  icon: <DeleteOutlined className="text-danger" />,
+                  key: "delete",
+                },
+              ],
+              onClick: (e) => onClick(e, rec),
+            }}
+            trigger={["click"]}
+            className="centered"
+          >
+            <Button color="success" className="centered" shape="circle">
+              <MoreOutlined />
+            </Button>
+          </Dropdown>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <Space size={10} direction="vertical" className="w-100">
       <Title level={3}>Products</Title>
@@ -168,7 +249,7 @@ export default function Products() {
             className="centered"
             shape="round"
             icon={<PlusOutlined />}
-            onClick={() => setDrawer({ open: true, type: "add" })}
+            onClick={() => setDrawer({ add: true })}
           >
             Add Product
           </Button>
@@ -218,12 +299,21 @@ export default function Products() {
       ) : null}
 
       <AddProduct
-        type={drawer?.type}
-        open={drawer?.open}
-        close={() => setDrawer({ open: false, type: "" })}
+        open={drawer?.add}
+        close={() => setDrawer({ add: false })}
         categories={categories}
         getProducts={() => getData(query)}
       />
+
+      {editData && (
+        <EditProduct
+          data={editData}
+          open
+          close={() => setEditData(null)}
+          categories={categories}
+          getProducts={() => getData(query)}
+        />
+      )}
     </Space>
   );
 }

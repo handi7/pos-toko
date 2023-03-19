@@ -20,8 +20,13 @@ import React, { useState } from "react";
 
 const api = process.env.REACT_APP_API_URL;
 
-export default function AddProduct({ open, close, categories, getProducts }) {
-  const [form] = Form.useForm();
+export default function EditProduct({
+  data,
+  open,
+  close,
+  categories,
+  getProducts,
+}) {
   const [image, setImage] = useState({ file: null, preview: null });
   const [loading, setLoading] = useState(false);
 
@@ -29,24 +34,30 @@ export default function AddProduct({ open, close, categories, getProducts }) {
     try {
       setLoading(true);
       const formData = new FormData();
-      formData.append("file", image?.file);
-      for (const key in form) {
-        if (key !== "image") formData.append(key, form[key]);
+      if (image?.file) {
+        formData.append("file", image?.file);
+        formData.append("imgName", data?.img_name);
       }
 
-      await axios.post(`${api}/product`, formData);
+      for (const key in form) {
+        if (key !== "image" && form[key] !== data[key]) {
+          formData.append(key, form[key]);
+        }
+      }
+
+      formData.append("id", data?.id);
+
+      await axios.patch(`${api}/product`, formData);
       getProducts();
       setLoading(false);
       onCancel();
     } catch (error) {
       setLoading(false);
-      console.log(error);
     }
   };
 
   const onCancel = () => {
     if (!loading) {
-      form.resetFields();
       setImage({ file: null, preview: null });
       close();
     }
@@ -60,26 +71,26 @@ export default function AddProduct({ open, close, categories, getProducts }) {
   return (
     <Drawer
       title="Add Product"
-      //   width={720}
       style={{ maxWidth: "100%" }}
       onClose={onCancel}
       open={open}
       bodyStyle={{ paddingBottom: 80 }}
     >
-      <Form layout="vertical" onFinish={onFinish} form={form}>
+      <Form layout="vertical" onFinish={onFinish} initialValues={data}>
         <Row gutter={16}>
           <Col span={24}>
-            <Form.Item
-              name="image"
-              rules={[{ required: true, message: "Please select image" }]}
-            >
+            <Form.Item name="image">
               <div className="text-center position-relative">
                 <label
                   htmlFor="product1"
                   className="pointer border rounded px-2"
                 >
-                  {image?.preview ? (
-                    <img src={image?.preview} width={200} alt="product" />
+                  {image?.preview || data?.img_url ? (
+                    <img
+                      src={image?.preview || data?.img_url}
+                      width={200}
+                      alt="product"
+                    />
                   ) : (
                     <PictureOutlined
                       style={{ fontSize: 200 }}
@@ -206,7 +217,7 @@ export default function AddProduct({ open, close, categories, getProducts }) {
                   {loading ? (
                     <Spin indicator={<LoadingOutlined spin />} />
                   ) : (
-                    "Add"
+                    "Update"
                   )}
                 </Button>
               </Space>
