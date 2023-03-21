@@ -19,6 +19,7 @@ import {
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AddUser from "../components/AddUser";
 import UserDetail from "../components/UserDetail";
 import { textCaps } from "../hooks/text";
 import { useQuery } from "../hooks/useQuery";
@@ -39,6 +40,7 @@ export default function Users() {
 
   const [data, setData] = useState({ data: [], total: 0 });
   const [loading, setLoading] = useState(false);
+  const [addUser, setAddUser] = useState(false);
   const [searchText, setText] = useState("");
   const [userDetail, setUser] = useState(null);
 
@@ -108,19 +110,25 @@ export default function Users() {
         break;
 
       case "deactivate":
-        setLoading(true);
-        const id = item?.id;
-        const is_active = item?.is_active === 0;
-        await axios.patch(
-          `${api}/user`,
-          { id, is_active },
-          { headers: { Authorization: token } }
-        );
-        message.success(
-          `${item?.name} berhasil ${is_active ? "diaktifkan" : "dinonaktifkan"}`
-        );
-        getData(query);
-        setLoading(false);
+        if (item?.is_verified) {
+          setLoading(true);
+          const id = item?.id;
+          const is_active = item?.is_active === 0;
+          await axios.patch(
+            `${api}/user`,
+            { id, is_active },
+            { headers: { Authorization: token } }
+          );
+          message.success(
+            `${item?.name} berhasil ${
+              is_active ? "diaktifkan" : "dinonaktifkan"
+            }`
+          );
+          getData(query);
+          setLoading(false);
+        } else {
+          message.error("user is unverified");
+        }
         break;
 
       default:
@@ -155,9 +163,13 @@ export default function Users() {
             <Tag color={user?.is_verified ? "green" : "red"}>
               {user?.is_verified ? "Verified" : "Unverified"}
             </Tag>
-            <Tag color={user?.is_active ? "green" : "red"}>
-              {user?.is_active ? "Active" : "Deactivated"}
-            </Tag>
+            {user?.is_verified ? (
+              <Tag color={user?.is_active ? "green" : "red"}>
+                {user?.is_active ? "Active" : "Deactivated"}
+              </Tag>
+            ) : (
+              "-"
+            )}
           </div>
         );
       },
@@ -210,11 +222,16 @@ export default function Users() {
 
   return (
     <Space size={10} direction="vertical" className="w-100">
-      <Title level={3}>Data User</Title>
+      <Title level={3}>Users</Title>
       <div className="between">
         <Space size={10} className="d-flex align-items-center">
-          <Button className="centered" shape="round" icon={<PlusOutlined />}>
-            Tambah user
+          <Button
+            className="centered"
+            shape="round"
+            icon={<PlusOutlined />}
+            onClick={() => setAddUser(true)}
+          >
+            Add user
           </Button>
         </Space>
 
@@ -256,6 +273,12 @@ export default function Users() {
         user={userDetail}
         open={userDetail}
         close={() => setUser(null)}
+        getUsers={() => getData(query)}
+      />
+
+      <AddUser
+        open={addUser}
+        close={() => setAddUser(false)}
         getUsers={() => getData(query)}
       />
     </Space>

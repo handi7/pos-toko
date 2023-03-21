@@ -59,11 +59,13 @@ export default function UserDetail({ user, open, close, getUsers }) {
         </Col>
 
         <Col span={10} />
-        <Col span={14}>
-          <Tag color={user?.is_active ? "green" : "red"}>
-            {user?.is_active ? "Active" : "Deactived"}
-          </Tag>
-        </Col>
+        {user?.is_verified ? (
+          <Col span={14}>
+            <Tag color={user?.is_active ? "green" : "red"}>
+              {user?.is_active ? "Active" : "Deactived"}
+            </Tag>
+          </Col>
+        ) : null}
       </Row>
 
       <div className="text-center mt-3">
