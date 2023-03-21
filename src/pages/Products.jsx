@@ -290,7 +290,7 @@ export default function Products() {
             defaultCurrent={1}
             current={offset / +limit + 1}
             pageSize={+limit}
-            pageSizeOptions={[2, 3]}
+            pageSizeOptions={[10, 15]}
             total={data?.total}
             onChange={paginate}
             // onShowSizeChange={paginate}
