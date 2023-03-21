@@ -1,11 +1,34 @@
-import { Button, Col, Drawer, Row, Space, Tag } from "antd";
+import { Button, Col, Drawer, message, Row, Space, Tag } from "antd";
+import axios from "axios";
 import React from "react";
 import { useSelector } from "react-redux";
 import { textCaps } from "../hooks/text";
 import { selectUser } from "../store/slices/userSlice";
 
-export default function UserDetail({ user, open, close }) {
+const api = process.env.REACT_APP_API_URL;
+
+export default function UserDetail({ user, open, close, getUsers }) {
   const currentUser = useSelector(selectUser);
+  const token = localStorage.getItem(process.env.REACT_APP_TOKEN);
+
+  const onActivate = async () => {
+    try {
+      const id = user?.id;
+      const is_active = user?.is_active === 0;
+      await axios.patch(
+        api + "/user",
+        { id, is_active },
+        { headers: { Authorization: token } }
+      );
+      message.success(
+        `${user?.name} berhasil ${is_active ? "diaktifkan" : "dinonaktifkan"}`
+      );
+      getUsers();
+      close();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <Drawer
@@ -52,7 +75,11 @@ export default function UserDetail({ user, open, close }) {
             {!user?.is_verified && (
               <Button type="link">Send verification</Button>
             )}
-            <Button size="small" danger={user?.is_active ? true : false}>
+            <Button
+              size="small"
+              danger={user?.is_active ? true : false}
+              onClick={onActivate}
+            >
               {user?.is_active ? "Deactivate" : "Activate"}
             </Button>
           </Space>

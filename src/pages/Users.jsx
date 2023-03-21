@@ -1,5 +1,4 @@
 import {
-  EditOutlined,
   EyeOutlined,
   LoadingOutlined,
   MoreOutlined,
@@ -102,14 +101,26 @@ export default function Users() {
     getData(query);
   }, [query]);
 
-  const onClick = ({ key }, item) => {
+  const onClick = async ({ key }, item) => {
     switch (key) {
       case "detail":
         setUser(item);
         break;
 
       case "deactivate":
-        message.success("deactivate");
+        setLoading(true);
+        const id = item?.id;
+        const is_active = item?.is_active === 0;
+        await axios.patch(
+          `${api}/user`,
+          { id, is_active },
+          { headers: { Authorization: token } }
+        );
+        message.success(
+          `${item?.name} berhasil ${is_active ? "diaktifkan" : "dinonaktifkan"}`
+        );
+        getData(query);
+        setLoading(false);
         break;
 
       default:
@@ -165,11 +176,21 @@ export default function Users() {
                 },
                 {
                   label: (
-                    <span className="text-danger">
+                    <span
+                      className={`text-${
+                        user?.is_active ? "danger" : "success"
+                      }`}
+                    >
                       {user?.is_active ? "Deactivate" : "Activate"}
                     </span>
                   ),
-                  icon: <UserDeleteOutlined className="text-danger" />,
+                  icon: (
+                    <UserDeleteOutlined
+                      className={`text-${
+                        user?.is_active ? "danger" : "success"
+                      }`}
+                    />
+                  ),
                   key: "deactivate",
                 },
               ],
@@ -235,6 +256,7 @@ export default function Users() {
         user={userDetail}
         open={userDetail}
         close={() => setUser(null)}
+        getUsers={() => getData(query)}
       />
     </Space>
   );
