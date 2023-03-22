@@ -38,7 +38,7 @@ export const menuData = [
     id: 5,
     label: "Category",
     icon: <OrderedListOutlined style={style} />,
-    key: "/category",
+    key: "/category/",
   },
   {
     id: 6,
