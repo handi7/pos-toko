@@ -70,7 +70,11 @@ export default function Users() {
 
   const paginate = (current) => {
     const off = (current - 1) * limit;
-    navigate(`/users/?offset=${off}&limit=${limit}${key ? `&key=${key}` : ""}`);
+    navigate(
+      `/users/?offset=${off}&limit=${limit}${key ? `&key=${key}` : ""}${
+        sort ? `&sort=${sort}` : ""
+      }${asc ? `&asc=${asc}` : ""}`
+    );
   };
 
   const onSort = (_, __, sort) => {

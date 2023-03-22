@@ -97,7 +97,9 @@ export default function Products() {
   const paginate = (current) => {
     const off = (current - 1) * limit;
     navigate(
-      `/products/?offset=${off}&limit=${limit}${key ? `&key=${key}` : ""}`
+      `/products/?offset=${off}&limit=${limit}${key ? `&key=${key}` : ""}${
+        sort ? `&sort=${sort}` : ""
+      }${asc ? `&asc=${asc}` : ""}`
     );
   };
 
