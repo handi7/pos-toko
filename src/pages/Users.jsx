@@ -1,62 +1,252 @@
-import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Input, Pagination, Space, Table, Typography } from "antd";
+import {
+  EyeOutlined,
+  LoadingOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  UserDeleteOutlined,
+} from "@ant-design/icons";
+import {
+  Button,
+  Dropdown,
+  Input,
+  message,
+  Pagination,
+  Space,
+  Table,
+  Tag,
+  Typography,
+} from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import AddUser from "../components/AddUser";
+import UserDetail from "../components/UserDetail";
+import { textCaps } from "../hooks/text";
+import { useQuery } from "../hooks/useQuery";
 
 const { Title } = Typography;
-const api = "https://63fcbcf18ef914c5559e48bf.mockapi.io/api/v1";
-
-const columns = [
-  {
-    title: "Name",
-    dataIndex: "name",
-    sorter: true,
-  },
-  {
-    title: "Email",
-    dataIndex: "email",
-  },
-  {
-    title: "Address",
-    dataIndex: "address",
-  },
-];
+const api = process.env.REACT_APP_API_URL;
 
 export default function Users() {
+  const query = window.location.search;
+  const offset = useQuery().get("offset") || 0;
+  const limit = useQuery().get("limit") || 10;
+  const key = useQuery().get("key");
+  const sort = useQuery().get("sort");
+  const asc = useQuery().get("asc");
+
+  const token = localStorage.getItem(process.env.REACT_APP_TOKEN);
+  const navigate = useNavigate();
+
   const [data, setData] = useState({ data: [], total: 0 });
   const [loading, setLoading] = useState(false);
+  const [addUser, setAddUser] = useState(false);
+  const [searchText, setText] = useState("");
+  const [userDetail, setUser] = useState(null);
 
-  const getData = async (page, limit) => {
+  const getData = async (query) => {
     try {
       setLoading(true);
-      const res = await axios.get(`${api}/users/?page=${page}&limit=${limit}`);
-      setData({ data: res.data, total: 60 });
+      const res = await axios.get(`${api}/users/${query}`, {
+        headers: { Authorization: token },
+      });
+      setData(res.data);
       setLoading(false);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const paginate = (page, size) => {
-    getData(page, size);
+  const onSearch = (text) => {
+    navigate(`/users/?offset=0&limit=${limit}&key=${text}`);
+  };
+
+  const inputHandler = (e) => {
+    if (!e.target.value) {
+      navigate(`/users/?offset=0&limit=${limit}`);
+    }
+    setText(e.target.value);
+  };
+
+  const paginate = (current) => {
+    const off = (current - 1) * limit;
+    navigate(
+      `/users/?offset=${off}&limit=${limit}${key ? `&key=${key}` : ""}${
+        sort ? `&sort=${sort}` : ""
+      }${asc ? `&asc=${asc}` : ""}`
+    );
+  };
+
+  const onSort = (_, __, sort) => {
+    switch (sort?.order) {
+      case "ascend":
+        navigate(
+          `/users/?offset=0&limit=${limit}${key ? `&key=${key}` : ""}&sort=${
+            sort?.field
+          }&asc=1`
+        );
+
+        break;
+
+      case "descend":
+        navigate(
+          `/users/?offset=0&limit=${limit}${key ? `&key=${key}` : ""}&sort=${
+            sort?.field
+          }`
+        );
+        break;
+
+      default:
+        navigate(`/users/?offset=0&limit=${limit}${key ? `&key=${key}` : ""}`);
+        break;
+    }
   };
 
   useEffect(() => {
-    getData(1, 10);
-  }, []);
+    setText(key);
+    getData(query);
+  }, [query]);
+
+  const onClick = async ({ key }, item) => {
+    switch (key) {
+      case "detail":
+        setUser(item);
+        break;
+
+      case "deactivate":
+        if (item?.is_verified) {
+          setLoading(true);
+          const id = item?.id;
+          const is_active = item?.is_active === 0;
+          await axios.patch(
+            `${api}/user`,
+            { id, is_active },
+            { headers: { Authorization: token } }
+          );
+          message.success(
+            `${item?.name} berhasil ${
+              is_active ? "diaktifkan" : "dinonaktifkan"
+            }`
+          );
+          getData(query);
+          setLoading(false);
+        } else {
+          message.error("user is unverified");
+        }
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  const columns = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      render: (name) => <span>{textCaps(name)}</span>,
+      sorter: true,
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      sorter: true,
+    },
+    {
+      title: "Role",
+      dataIndex: "role",
+      render: (role) => <span>{textCaps(role)}</span>,
+      sorter: true,
+    },
+    {
+      width: 200,
+      title: "Status",
+      render: (_, user) => {
+        return (
+          <div>
+            <Tag color={user?.is_verified ? "green" : "red"}>
+              {user?.is_verified ? "Verified" : "Unverified"}
+            </Tag>
+            {user?.is_verified ? (
+              <Tag color={user?.is_active ? "green" : "red"}>
+                {user?.is_active ? "Active" : "Deactivated"}
+              </Tag>
+            ) : (
+              "-"
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      width: 10,
+      render: (_, user) => (
+        <div className="centered-end">
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  label: <span>Detail</span>,
+                  icon: <EyeOutlined />,
+                  key: "detail",
+                },
+                {
+                  label: (
+                    <span
+                      className={`text-${
+                        user?.is_active ? "danger" : "success"
+                      }`}
+                    >
+                      {user?.is_active ? "Deactivate" : "Activate"}
+                    </span>
+                  ),
+                  icon: (
+                    <UserDeleteOutlined
+                      className={`text-${
+                        user?.is_active ? "danger" : "success"
+                      }`}
+                    />
+                  ),
+                  key: "deactivate",
+                },
+              ],
+              onClick: (e) => onClick(e, user),
+            }}
+            trigger={["click"]}
+            className="centered"
+          >
+            <Button color="success" className="centered" shape="circle">
+              <MoreOutlined />
+            </Button>
+          </Dropdown>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <Space size={10} direction="vertical" className="w-100">
-      <Title level={3}>Data User</Title>
+      <Title level={3}>Users</Title>
       <div className="between">
         <Space size={10} className="d-flex align-items-center">
-          <Button className="centered" shape="round" icon={<PlusOutlined />}>
-            Tambah user
+          <Button
+            className="centered"
+            shape="round"
+            icon={<PlusOutlined />}
+            onClick={() => setAddUser(true)}
+          >
+            Add user
           </Button>
         </Space>
 
         <Space size={10}>
-          <Input placeholder="search" />
+          <Input.Search
+            allowClear
+            placeholder="Search User"
+            value={searchText}
+            onSearch={onSearch}
+            onChange={inputHandler}
+          />
         </Space>
       </div>
 
@@ -66,17 +256,35 @@ export default function Users() {
         rowKey={(rec) => rec.id}
         dataSource={data?.data}
         columns={columns}
-        onChange={paginate}
+        onChange={onSort}
         pagination={false}
       />
 
-      <div className="centered-end">
-        <Pagination
-          total={data?.total}
-          onChange={paginate}
-          pageSizeOptions={[10, 15, 20]}
-        />
-      </div>
+      {data?.count ? (
+        <div className="centered-end">
+          <Pagination
+            defaultCurrent={1}
+            current={offset / +limit + 1}
+            pageSize={+limit}
+            total={data?.count}
+            onChange={paginate}
+            pageSizeOptions={[10, 15]}
+          />
+        </div>
+      ) : null}
+
+      <UserDetail
+        user={userDetail}
+        open={userDetail}
+        close={() => setUser(null)}
+        getUsers={() => getData(query)}
+      />
+
+      <AddUser
+        open={addUser}
+        close={() => setAddUser(false)}
+        getUsers={() => getData(query)}
+      />
     </Space>
   );
 }

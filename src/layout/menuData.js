@@ -20,7 +20,7 @@ export const menuData = [
     id: 2,
     label: "User",
     icon: <UserOutlined style={style} />,
-    key: "/users",
+    key: "/users/",
   },
   {
     id: 3,

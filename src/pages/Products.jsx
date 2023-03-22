@@ -97,7 +97,9 @@ export default function Products() {
   const paginate = (current) => {
     const off = (current - 1) * limit;
     navigate(
-      `/products/?offset=${off}&limit=${limit}${key ? `&key=${key}` : ""}`
+      `/products/?offset=${off}&limit=${limit}${key ? `&key=${key}` : ""}${
+        sort ? `&sort=${sort}` : ""
+      }${asc ? `&asc=${asc}` : ""}`
     );
   };
 
@@ -290,7 +292,7 @@ export default function Products() {
             defaultCurrent={1}
             current={offset / +limit + 1}
             pageSize={+limit}
-            pageSizeOptions={[2, 3]}
+            pageSizeOptions={[10, 15]}
             total={data?.total}
             onChange={paginate}
             // onShowSizeChange={paginate}
