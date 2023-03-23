@@ -8,9 +8,10 @@ import { faBars } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Avatar, Badge, Button, Drawer, Dropdown, Space } from "antd";
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Cart from "../components/Cart";
+import { selectCart } from "../store/slices/cartSlice";
 import { logout } from "../store/slices/userSlice";
 import Clock from "./Clock";
 
@@ -36,6 +37,8 @@ const items = [
 ];
 
 export default function Header({ mobile, setDrawer, setCollapsed }) {
+  const cart = useSelector(selectCart);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -64,7 +67,7 @@ export default function Header({ mobile, setDrawer, setCollapsed }) {
       {!mobile && <Clock />}
 
       <Space size={15}>
-        <Badge count={5} offset={[-5, 5]}>
+        <Badge count={cart?.length} offset={[-5, 5]} showZero>
           <Button
             type="link"
             size="large"
@@ -89,11 +92,11 @@ export default function Header({ mobile, setDrawer, setCollapsed }) {
       <Drawer
         title="Cart"
         placement="right"
-        width={mobile ? "90%" : 560}
+        width={mobile ? "90%" : 720}
         open={openCart}
         onClose={() => setCart(false)}
       >
-        <Cart />
+        <Cart cart={cart} />
       </Drawer>
     </header>
   );

@@ -1,34 +1,49 @@
-import { ShoppingCartOutlined } from "@ant-design/icons";
-import { Button, Col, InputNumber, Row, Typography } from "antd";
-import React, { useEffect, useState } from "react";
+import {
+  DeleteOutlined,
+  ExclamationCircleFilled,
+  ShoppingCartOutlined,
+} from "@ant-design/icons";
+import { Button, Col, InputNumber, Modal, Row, Typography } from "antd";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { idr } from "../hooks/text";
+import { deleteCart, updateCart } from "../store/slices/cartSlice";
+import { selectUser } from "../store/slices/userSlice";
 
 const { Title } = Typography;
+const { confirm } = Modal;
 
-export default function Cart() {
-  const [cart, setCart] = useState([]);
+export default function Cart({ cart }) {
+  const user = useSelector(selectUser);
+  const dispatch = useDispatch();
+
   const [pay, setPay] = useState({ pay: 0, change: 0 });
 
   let total = 0;
-
-  const getCart = () => {
-    const temp = [];
-    for (let i = 0; i < 5; i++) {
-      temp.push({
-        name: "Product kjasgkjgd laskjdgk kjafhjhjashl khkgahsg" + (i + 1),
-        qty: 2,
-        price: 3000,
-      });
-    }
-    setCart(temp);
-  };
 
   const onChange = (val) => {
     setPay({ pay: val, change: val ? val - total : 0 });
   };
 
-  useEffect(() => {
-    getCart();
-  }, []);
+  const onQtyChange = (qty, id) => {
+    if (qty) {
+      dispatch(updateCart(user?.id, { id, qty }));
+    }
+  };
+
+  const deleteConfirm = (id) => {
+    confirm({
+      title: `Delete item?`,
+      icon: <ExclamationCircleFilled />,
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk() {
+        dispatch(deleteCart(user?.id, id));
+      },
+      onCancel() {},
+    });
+  };
 
   return (
     <div>
@@ -42,17 +57,32 @@ export default function Cart() {
 
         return (
           <Row key={idx} gutter={5} className="border-bottom py-2">
-            <Col span={13}>
+            <Col span={11}>
               <span>{item?.name}</span>
             </Col>
-            <Col span={5}>
-              <span>Rp {item?.price}</span>
+            <Col span={4}>
+              <span>{idr(item?.price)}</span>
             </Col>
-            <Col span={1}>
-              <span>x{item?.qty}</span>
+            <Col span={3}>
+              <InputNumber
+                addonBefore="x"
+                min={1}
+                max={item?.stock}
+                value={item?.qty}
+                onChange={(qty) => onQtyChange(qty, item?.id)}
+              />
             </Col>
-            <Col span={5} className="text-end w-100">
-              <span>Rp {subTotal}</span>
+            <Col span={4} className="text-end w-100">
+              <span>{idr(subTotal)}</span>
+            </Col>
+            <Col span={2} className="text-end w-100">
+              <Button
+                type="link"
+                danger
+                onClick={() => deleteConfirm(item?.id)}
+              >
+                <DeleteOutlined />
+              </Button>
             </Col>
           </Row>
         );
@@ -63,7 +93,7 @@ export default function Cart() {
           <Title level={5}>Total</Title>
         </Col>
         <Col span={10} className="text-end fw-bold">
-          <span>Rp {total}</span>
+          <span>{idr(total)}</span>
         </Col>
 
         <Col span={14}>
@@ -77,7 +107,7 @@ export default function Cart() {
           <Title level={5}>Kembali</Title>
         </Col>
         <Col span={10} className="text-end">
-          <span>Rp {pay?.change}</span>
+          <span>{idr(pay?.change)}</span>
         </Col>
       </Row>
 

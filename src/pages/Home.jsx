@@ -18,12 +18,13 @@ import {
 } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Category from "../components/Category";
 import ProductCard from "../components/ProductCard";
 import { idr, textCaps } from "../hooks/text";
 import { useQuery } from "../hooks/useQuery";
+import { addToCart } from "../store/slices/cartSlice";
 import { selectUser } from "../store/slices/userSlice";
 
 const { Title, Text } = Typography;
@@ -43,6 +44,7 @@ const items = [
 
 export default function Home() {
   const user = useSelector(selectUser);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const query = window.location.search;
@@ -141,12 +143,13 @@ export default function Home() {
       );
   }, []);
 
-  const addToCart = (item) => {
+  const addCart = (item) => {
     const user_id = user?.id;
     const product_id = item?.id;
-    const qty = item?.qty;
-    const onAdd = () => {
-      if (!item?.qty) return message.error("Please add quantity at least 1");
+    const onAdd = async () => {
+      const qty = item?.qty;
+      if (!qty) return message.error("Please add quantity at least 1");
+      dispatch(addToCart({ user_id, product_id, qty }));
     };
     return (
       <Button type="link" icon={<ShoppingCartOutlined />} onClick={onAdd} />
@@ -182,17 +185,18 @@ export default function Home() {
       render: (_, product) => <Text>{`${product.stock} ${product.unit}`}</Text>,
     },
     {
-      width: 200,
+      width: 150,
       title: "Add to Cart",
       dataIndex: "stock",
       render: (stock, product) => {
         return (
           <InputNumber
             placeholder="qty"
-            min={0}
+            defaultValue={1}
+            min={1}
             max={stock}
             onChange={(val) => (product.qty = val)}
-            addonAfter={addToCart(product)}
+            addonAfter={addCart(product)}
           />
         );
       },
