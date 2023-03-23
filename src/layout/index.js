@@ -8,6 +8,7 @@ import MenuItems from "./MenuItems";
 import { useDispatch, useSelector } from "react-redux";
 import { LoadingOutlined } from "@ant-design/icons";
 import { keepLogin, selectUser } from "../store/slices/userSlice";
+import { getCart } from "../store/slices/cartSlice";
 
 export default function PrivateLayout() {
   const user = useSelector(selectUser);
@@ -29,6 +30,7 @@ export default function PrivateLayout() {
       }
     } else {
       setLogged(true);
+      dispatch(getCart(user?.id));
     }
   }, [user]);
 
