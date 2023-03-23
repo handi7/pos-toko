@@ -1,7 +1,11 @@
-import { LoadingOutlined } from "@ant-design/icons";
+import { LoadingOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 import {
+  Button,
   Col,
+  Image,
   Input,
+  InputNumber,
+  message,
   Modal,
   Pagination,
   Row,
@@ -14,12 +18,17 @@ import {
 } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import Category from "../components/Category";
 import ProductCard from "../components/ProductCard";
+import { idr, textCaps } from "../hooks/text";
+import { useQuery } from "../hooks/useQuery";
+import { selectUser } from "../store/slices/userSlice";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
-const api = "https://63fcbcf18ef914c5559e48bf.mockapi.io/api/v1";
+const api = process.env.REACT_APP_API_URL;
 
 const items = [
   {
@@ -32,26 +41,17 @@ const items = [
   },
 ];
 
-const columns = [
-  {
-    title: "Name",
-    dataIndex: "name",
-    sorter: true,
-  },
-  {
-    title: "Price",
-    dataIndex: "price",
-  },
-  {
-    title: "Address",
-    dataIndex: "address",
-  },
-];
-
 export default function Home() {
-  // const user = useSelector((state) => state.user);
+  const user = useSelector(selectUser);
+  const navigate = useNavigate();
 
-  const [products, setProducts] = useState([]);
+  const query = window.location.search;
+  const offset = useQuery().get("offset") || 0;
+  const limit = useQuery().get("limit") || 10;
+  const key = useQuery().get("key");
+  const cat = useQuery().get("cat");
+
+  const [products, setProducts] = useState({});
   const [selected, setSelected] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -60,12 +60,10 @@ export default function Home() {
   const [grid, setGrid] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  const getProducts = async (page, limit) => {
+  const getProducts = async (query) => {
     try {
       setLoading(true);
-      const res = await axios.get(
-        `${api}/products/?page=${page}&limit=${limit}`
-      );
+      const res = await axios.get(`${api}/products/${query}`);
       setProducts(res.data);
       setLoading(false);
     } catch (error) {
@@ -73,17 +71,34 @@ export default function Home() {
     }
   };
 
-  const getCategories = () => {
-    const temp = [];
-    temp.push({ id: 1, label: "All", value: "" });
-    for (let i = 1; i < 5; i++) {
-      temp.push({
-        id: i + 1,
-        label: "Category" + (i + 1),
-        value: "category" + (i + 1),
-      });
+  const getCategories = async () => {
+    try {
+      const res = await axios.get(`${api}/categories`);
+      setCategories(res.data.data);
+    } catch (error) {
+      console.log(error);
     }
-    setCategories(temp);
+  };
+
+  const onSelectCategory = (name, category) => {
+    if (name) {
+      setCategory(category);
+      navigate(`/?cat=${category?.cat_id}${key ? `&key=${key}` : ""}`);
+    } else {
+      navigate(`/?${key ? `key=${key}` : ""}`);
+    }
+  };
+
+  const onSearch = (val) => {
+    if (val) {
+      navigate(`/?key=${val}${cat ? `&cat=${cat}` : ""}`);
+    } else {
+      navigate(`/?${cat ? `cat=${cat}` : ""}`);
+    }
+  };
+
+  const onSearchChange = (e) => {
+    if (!e.target.value) navigate(`/?${cat ? `cat=${cat}` : ""}`);
   };
 
   const selectProduct = (item) => {
@@ -91,14 +106,29 @@ export default function Home() {
     setOpenModal(true);
   };
 
-  const paginate = (page, size) => {
-    getProducts(page, size);
+  const paginate = (current) => {
+    const off = (current - 1) * limit;
+    navigate(
+      `/?offset=${off}&limit=${limit}${cat ? `&cat=${cat}` : ""}${
+        key ? `&key=${key}` : ""
+      }`
+    );
   };
 
   useEffect(() => {
-    getProducts(1, 10);
+    getProducts(query);
     getCategories();
-  }, []);
+  }, [query]);
+
+  useEffect(() => {
+    if (cat) {
+      categories.map((category) => {
+        if (+cat === category.cat_id) setCategory(category);
+      });
+    } else {
+      setCategory(null);
+    }
+  }, [categories, cat]);
 
   useEffect(() => {
     setShowCategory(window.innerWidth > 1500);
@@ -110,6 +140,64 @@ export default function Home() {
         setShowCategory(window.innerWidth > 1500)
       );
   }, []);
+
+  const addToCart = (item) => {
+    const user_id = user?.id;
+    const product_id = item?.id;
+    const qty = item?.qty;
+    const onAdd = () => {
+      if (!item?.qty) return message.error("Please add quantity at least 1");
+    };
+    return (
+      <Button type="link" icon={<ShoppingCartOutlined />} onClick={onAdd} />
+    );
+  };
+
+  const columns = [
+    {
+      title: "Product",
+      dataIndex: "name",
+      render: (name, rec) => {
+        return (
+          <Space>
+            <Image src={rec?.img_url} width={40} />
+            <Text strong>{textCaps(name)}</Text>
+          </Space>
+        );
+      },
+    },
+    {
+      title: "Category",
+      dataIndex: "label",
+      render: (label) => <Text>{label}</Text>,
+    },
+    {
+      title: "Price",
+      dataIndex: "price",
+      render: (price) => <Text>{idr(price)}</Text>,
+    },
+    {
+      title: "Stock",
+      dataIndex: "stock",
+      render: (_, product) => <Text>{`${product.stock} ${product.unit}`}</Text>,
+    },
+    {
+      width: 200,
+      title: "Add to Cart",
+      dataIndex: "stock",
+      render: (stock, product) => {
+        return (
+          <InputNumber
+            placeholder="qty"
+            min={0}
+            max={stock}
+            onChange={(val) => (product.qty = val)}
+            addonAfter={addToCart(product)}
+          />
+        );
+      },
+    },
+  ];
 
   return (
     <div className="fw-bold">
@@ -125,20 +213,28 @@ export default function Home() {
             <Space size={5}>
               {!showCategory && (
                 <Select
-                  value={category}
                   style={{ width: 120 }}
                   options={categories}
-                  onChange={(val) => setCategory(val)}
+                  value={category?.value}
+                  allowClear
+                  placeholder="All"
+                  onChange={onSelectCategory}
                 />
               )}
-              <Input.Search style={{ width: 200 }} placeholder="Search" />
+              <Input.Search
+                allowClear
+                style={{ width: 200 }}
+                placeholder="Search"
+                onChange={onSearchChange}
+                onSearch={onSearch}
+              />
             </Space>
           </div>
 
           {grid ? (
             <Spin spinning={loading} indicator={<LoadingOutlined spin />}>
               <Row gutter={[20, 20]}>
-                {products?.map((product) => {
+                {products?.data?.map((product) => {
                   return (
                     <Col
                       key={product?.id}
@@ -161,28 +257,32 @@ export default function Home() {
                 spinning: loading,
                 indicator: <LoadingOutlined spin />,
               }}
+              bordered
               rowKey={(r) => r.id}
-              dataSource={products}
+              dataSource={products?.data}
               columns={columns}
               pagination={false}
             />
           )}
-          <Pagination
-            className="centered-end pt-3"
-            defaultCurrent={1}
-            pageSizeOptions={[10, 15]}
-            total={60}
-            onChange={paginate}
-          />
+
+          {products?.total ? (
+            <div className="centered-end pt-3">
+              <Pagination
+                defaultCurrent={1}
+                current={offset / +limit + 1}
+                pageSize={+limit}
+                pageSizeOptions={[10, 15]}
+                total={products?.total}
+                onChange={paginate}
+                // onShowSizeChange={paginate}
+              />
+            </div>
+          ) : null}
         </Col>
 
         {showCategory && (
           <Col xs={6}>
-            <Category
-              categories={categories}
-              selected={category}
-              select={setCategory}
-            />
+            <Category categories={categories} selected={cat} />
           </Col>
         )}
       </Row>
@@ -195,7 +295,7 @@ export default function Home() {
         onOk={() => setOpenModal(false)}
         onCancel={() => setOpenModal(false)}
       >
-        <img src={selected?.image} width="100%" alt="product" />
+        <img src={selected?.img_url} width="100%" alt="product" />
 
         <div className="mt-2">
           <span className="text-success fw-bold fs-5">$ {selected?.price}</span>
